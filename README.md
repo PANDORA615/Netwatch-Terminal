@@ -8,9 +8,9 @@
 </p>
 
 <p align="center">
-  <a href="#запуск-в-windows-powershell">Запуск</a> ·
-  <a href="#интерфейс">Скриншоты</a> ·
-  <a href="#текущая-версия-этапы-01">Возможности</a> ·
+  <a href="docs/INSTALL.md">Запуск</a> ·
+  <a href="docs/SCREENSHOTS.md">Скриншоты</a> ·
+  <a href="docs/FEATURES.md">Возможности</a> ·
   <a href="https://github.com/PANDORA615/Netwatch-Terminal/actions">Сборки</a>
 </p>
 
@@ -39,25 +39,35 @@
 
 Поле ввода принимает текст и показывает уведомление о предпросмотре. **Команды пока не выполняются**, ввод не записывается в историю. Нет реальных системных метрик, файловых операций, сетевых запросов и BreachLab; соответствующие экраны помечены как запланированные. Настройки и выбранный профиль пока действуют только в текущем сеансе; анимации отключены.
 
-## Запуск в Windows (PowerShell)
+## Установка и запуск
+
+**Самый простой способ для Windows — готовая сборка, Python не нужен.**
+
+1. Откройте [GitHub Actions → Desktop checks](https://github.com/PANDORA615/Netwatch-Terminal/actions/workflows/ci.yml).
+2. Выберите успешный запуск для ветки `main` с зелёной галочкой.
+3. Внизу страницы, в **Artifacts**, скачайте **NetwatchTerminal-Windows-x64**. Для скачивания требуется вход в GitHub.
+4. Нажмите на ZIP правой кнопкой → **Извлечь всё**. Сохраните всю распакованную папку, включая `_internal`.
+5. Откройте `NetwatchTerminal.exe` из распакованной папки. Не запускайте его прямо из ZIP и не переносите отдельно от остальных файлов.
+
+Это desktop-приложение для Windows 10/11 x64. На Android/iPhone файл `.exe` не запускается. Готовые сборки пока тестовые; отдельного установщика нет.
+
+**[Полный гайд установки →](docs/INSTALL.md)** — установка Python, скачивание без Git, запуск, обновление, Linux и решение ошибок.
+
+### Запуск из исходников в Windows
+
+Установите [Python 3.12 x64](https://www.python.org/downloads/windows/), включая Python Launcher и пункт **Add python.exe to PATH**. Скачайте репозиторий через **Code → Download ZIP**, распакуйте его и откройте PowerShell в папке, содержащей `pyproject.toml` (правый клик в пустом месте папки → **Открыть в Терминале**).
+
+Выполните команды по очереди:
 
 ```powershell
-git clone https://github.com/PANDORA615/Netwatch-Terminal.git
-cd Netwatch-Terminal
+py -3.12 --version
 py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -e .
 .\.venv\Scripts\python.exe -m netwatch_terminal
 ```
 
-В Linux:
-
-```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -e '.[dev]'
-.venv/bin/python -m netwatch_terminal
-```
-
-Нужен графический сеанс. Для проверки без дисплея используйте `QT_QPA_PLATFORM=offscreen`.
+Для следующих запусков откройте PowerShell в той же папке и выполните только последнюю команду. Активация окружения и изменение политики PowerShell не требуются. Интернет нужен для первой установки зависимостей.
 
 ## Проверка вручную
 
@@ -68,6 +78,12 @@ python3.12 -m venv .venv
 5. `Ctrl+1`…`Ctrl+8` переключают разделы, `Ctrl+L` открывает Terminal и фокусирует ввод; Tab перемещает фокус.
 
 ## Тесты и снимок окна
+
+Для разработки сначала установите дополнительные зависимости:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+```
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
