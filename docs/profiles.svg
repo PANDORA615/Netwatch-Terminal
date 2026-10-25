@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="180" viewBox="0 0 1440 180" role="img" aria-labelledby="title">
+<title id="title">Seven Linux syntax profiles: Ubuntu, Debian, Fedora, Arch, Kali, openSUSE, Alpine</title>
+<path fill="#11121c" d="M0 0H1440V180H0Z"/>
+<path fill="#dcfa63" d="M0 0H6V180H0Z"/>
+<g font-family="monospace"><text x="32" y="35" fill="#dcfa63" font-size="17">PROFILE LIBRARY // 07 DISTROS · 05 PACKAGE MANAGERS</text>
+<g fill="#929d82" font-size="16"><text x="34" y="91">UBUNTU</text><text x="230" y="91">DEBIAN</text><text x="426" y="91">FEDORA</text><text x="622" y="91">ARCH</text><text x="818" y="91">KALI</text><text x="1014" y="91">openSUSE</text><text x="1210" y="91">ALPINE</text></g>
+<g fill="#e3f6b4" font-size="25"><text x="34" y="130">apt</text><text x="230" y="130">apt</text><text x="426" y="130">dnf</text><text x="622" y="130">pacman</text><text x="818" y="130">apt</text><text x="1014" y="130">zypper</text><text x="1210" y="130">apk</text></g></g>
+<path stroke="#424c32" d="M208 65V145M404 65V145M600 65V145M796 65V145M992 65V145M1188 65V145M32 160H1408"/>
+</svg>

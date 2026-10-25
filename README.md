@@ -1,8 +1,35 @@
-# NETWATCH//TERMINAL
+<p align="center">
+  <img src="docs/banner.svg" alt="NETWATCH // TERMINAL — Your workspace. Your Linux dialect." width="100%">
+</p>
+
+<p align="center">
+  <b>LOCAL FIRST · CYBERPUNK HUD · LINUX SYNTAX PROFILES</b><br>
+  Python 3.12+ &nbsp; / &nbsp; PySide6 &nbsp; / &nbsp; Windows 10–11 &amp; Linux
+</p>
+
+<p align="center">
+  <a href="#запуск-в-windows-powershell">Запуск</a> ·
+  <a href="#интерфейс">Скриншоты</a> ·
+  <a href="#текущая-версия-этапы-01">Возможности</a> ·
+  <a href="https://github.com/PANDORA615/Netwatch-Terminal/actions">Сборки</a>
+</p>
 
 Локальное desktop-приложение на Python 3.12+ и PySide6 в оригинальном cyberpunk-стиле. Целевая платформа — Windows 10/11 x64; интерфейс также можно запускать в Linux.
 
-![Запущенный интерфейс PySide6](docs/terminal-preview.png)
+## Интерфейс
+
+Лаймовые панели, тонкие технические рамки, статичные скан-линии и тёмный фиолетовый фон. Оформление создано для проекта по мотивам cyberpunk-терминалов; изображения ниже — снимки работающего приложения PySide6.
+
+![Terminal — профиль Ubuntu, поле ввода и справка синтаксиса](docs/terminal-preview.png)
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/dashboard-preview.png" alt="Dashboard: системная панель в новой HUD-теме"><br><b>SYS//PULSE</b> — экран системного обзора</td>
+    <td width="50%"><img src="docs/arch-preview.png" alt="Terminal: выбран Arch Linux и показаны команды pacman"><br><b>ARCH PROFILE</b> — приглашение и подсказки pacman</td>
+  </tr>
+</table>
+
+![Профили Linux и их пакетные менеджеры](docs/profiles.svg)
 
 ## Текущая версия: этапы 0–1
 
@@ -45,6 +72,7 @@ python3.12 -m venv .venv
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe -m netwatch_terminal --screenshot docs/terminal-preview.png
+.\.venv\Scripts\python.exe scripts/render_previews.py
 ```
 
 CI запускает pytest и рендер окна на Linux и Windows, затем собирает Windows-приложение. В разделе [Actions](https://github.com/PANDORA615/Netwatch-Terminal/actions) после успешного запуска скачайте артефакт `NetwatchTerminal-Windows-x64`, распакуйте всю папку и запустите `NetwatchTerminal.exe`. Это тестовая сборка; проверка на чистой Windows 10/11 отдельно ещё требуется.
@@ -61,6 +89,8 @@ CI запускает pytest и рендер окна на Linux и Windows, з�
 - `src/netwatch_terminal/core/distributions.py` — профили и справочные команды без зависимости от Qt.
 - `src/netwatch_terminal/ui/` — окно, навигация, тема и заглушки.
 - `tests/` — импорт, навигация, профили, размеры и безопасный предпросмотр ввода.
+- `docs/` — оригинальные SVG-баннеры и скриншоты работающего интерфейса.
+- `scripts/render_previews.py` — повторное создание галереи README.
 - `.github/workflows/ci.yml` — проверки и Windows-сборка.
 
 Следующий этап ТЗ: собственные CommandParser/Registry/Executor и безопасные `help`, `clear`, `pwd`, `ls`, `cd`, `cat`, `mkdir`, затем история. Полный Bash-синтаксис и произвольный shell-код не планируются. Мониторинг — этап 3, остальные модули — последующие этапы.

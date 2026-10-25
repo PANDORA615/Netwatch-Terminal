@@ -1,25 +1,32 @@
+"""Original phosphor HUD palette, inspired by industrial terminal displays."""
+
 STYLESHEET = """
-QWidget { background: #0B0E12; color: #E7E9ED; font-size: 13px; }
+QWidget { background: transparent; color: #D4DBB4; font-size: 13px; }
+QMainWindow { background: #100F19; }
 QLabel { background: transparent; }
-QLabel#muted { color: #85919F; }
-QLabel#accent { color: #F0CB56; }
-QLabel#title { font-size: 29px; font-weight: bold; }
-QLabel#brand { font-size: 22px; font-weight: bold; color: #F0CB56; }
-QFrame#sidebar { background: #10151C; border-right: 1px solid #28313D; }
-QFrame#panel { background: #151B22; border: 1px solid #2A3440; border-radius: 5px; }
+QLabel#muted { color: #92977E; }
+QLabel#accent { color: #DCFA63; }
+QLabel#title { font-size: 32px; font-weight: bold; color: #E4F6AA; letter-spacing: 2px; }
+QLabel#brand { font-size: 23px; font-weight: bold; color: #DCFA63; letter-spacing: 1px; }
+QLabel#ribbon { background: #DCFA63; color: #171C0D; padding: 7px 12px; font-weight: bold; letter-spacing: 1px; }
+QLabel#section { background: #CADF64; color: #171C0D; padding: 9px 12px; font-weight: bold; }
+QLabel#readout { color: #DCFA63; background: #22251B; border: 1px solid #636B3E; padding: 8px 10px; font-size: 11px; }
+QFrame#sidebar { background: #11121A; border-right: 1px solid #636B3E; }
+QFrame#panel { background: #12131E; border: 1px solid #616641; border-radius: 0px; }
 QFrame#panel QLabel, QFrame#panel QCheckBox { background: transparent; }
-QPushButton { text-align: left; padding: 12px; border: 1px solid #303B48; border-radius: 3px; background: #151B22; }
-QPushButton:hover { border-color: #F0CB56; color: #F0CB56; }
-QPushButton:checked { background: #302C1B; color: #F0CB56; border-left: 3px solid #F0CB56; }
-QPushButton:focus, QLineEdit:focus, QComboBox:focus, QCheckBox:focus { border: 2px solid #F0CB56; }
-QComboBox { padding: 10px; background: #1C242E; border: 1px solid #596473; border-radius: 3px; min-width: 150px; }
-QComboBox QAbstractItemView { background: #151B22; selection-background-color: #403A23; }
-QLineEdit { padding: 13px; background: #10151C; border: 1px solid #4B5664; selection-background-color: #695921; }
-QPlainTextEdit { padding: 18px; border: none; background: #0D1218; color: #BAC7D5; selection-background-color: #554B27; }
+QFrame#panel QLabel#section { background: #DCFA63; color: #171C0D; }
+QPushButton { text-align: left; padding: 12px; border: 1px solid #434A33; border-radius: 0px; background: #15171C; color: #B5C28D; }
+QPushButton:hover { border-color: #DCFA63; background: #252B1D; color: #F0FFAA; }
+QPushButton:checked { background: #DCFA63; color: #171C0D; border: 1px solid #DCFA63; font-weight: bold; }
+QPushButton:focus, QLineEdit:focus, QComboBox:focus, QCheckBox:focus { border: 2px solid #DCFA63; }
+QComboBox { padding: 10px; background: #22251B; color: #E3F0BB; border: 1px solid #869451; border-radius: 0px; min-width: 150px; }
+QComboBox QAbstractItemView { background: #171B1A; color: #E3F0BB; selection-background-color: #DCFA63; selection-color: #171C0D; }
+QLineEdit { padding: 13px; background: #12151B; border: 1px solid #869451; color: #E6F7BA; selection-background-color: #52652A; }
+QPlainTextEdit { padding: 18px; border: none; background: #11121C; color: #C7D49F; selection-background-color: #52652A; }
 QScrollArea { border: none; }
-QScrollBar:vertical { background: #10151C; width: 10px; }
-QScrollBar::handle:vertical { background: #3A4655; min-height: 24px; }
+QScrollBar:vertical { background: #11121C; width: 8px; }
+QScrollBar::handle:vertical { background: #7D8A49; min-height: 24px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
-QStatusBar { color: #85919F; border-top: 1px solid #28313D; }
-QToolTip { background: #151B22; color: #F0CB56; border: 1px solid #F0CB56; }
+QStatusBar { background: #15191C; color: #A0C5BC; border-top: 1px solid #636B3E; padding: 4px; }
+QToolTip { background: #20251A; color: #DCFA63; border: 1px solid #DCFA63; }
 """

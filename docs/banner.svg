@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="420" viewBox="0 0 1440 420" role="img" aria-labelledby="title desc">
+<title id="title">NETWATCH // TERMINAL</title>
+<desc id="desc">Original lime and dark violet terminal artwork. Local desktop interface, Linux syntax profiles, Python and Qt.</desc>
+<defs>
+ <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#272b30" stroke-width="1"/></pattern>
+ <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 0H4" stroke="#ffffff" stroke-opacity=".025"/></pattern>
+</defs>
+<path fill="#100f19" d="M0 0H1440V420H0Z"/>
+<path fill="url(#grid)" d="M0 0H1440V420H0Z"/>
+<path fill="url(#scan)" d="M0 0H1440V420H0Z"/>
+<g fill="none" stroke="#626d3e"><path d="M24 24H1416V396H24Z"/><path d="M32 32H1408V388H32Z"/><path d="M64 109H1376M64 329H1376"/></g>
+<g stroke="#dcfa63" stroke-width="4" fill="none"><path d="M24 57V24H62M1378 24H1416V57M24 363V396H62M1378 396H1416V363"/></g>
+<path fill="#dcfa63" d="M64 55H625L645 75V87H64Z"/>
+<g font-family="monospace">
+ <text x="80" y="77" font-size="17" font-weight="700" fill="#151a10">NW–01 / PERSONAL OPERATIONS INTERFACE</text>
+ <text x="1376" y="77" text-anchor="end" font-size="16" fill="#a5b98a">LOCAL DESKTOP · UI PREVIEW</text>
+ <text x="61" y="201" fill="#e3f8b5" font-size="73" font-weight="700" letter-spacing="-3">NETWATCH<tspan fill="#dcfa63">//</tspan>TERMINAL</text>
+ <text x="65" y="248" fill="#abb69b" font-size="21" letter-spacing="3">YOUR WORKSPACE. YOUR LINUX DIALECT.</text>
+ <text x="65" y="296" fill="#dcfa63" font-size="16">PYTHON 3.12+  /  PYSIDE6  /  WINDOWS + LINUX</text>
+ <text x="65" y="367" fill="#9dab86" font-size="15">01  CHOOSE A PROFILE</text>
+ <text x="520" y="367" fill="#9dab86" font-size="15">02  EXPLORE THE SYNTAX</text>
+ <text x="1055" y="367" fill="#9dab86" font-size="15">03  MAKE IT YOURS</text>
+</g>
+<g fill="#dcfa63"><path d="M1320 276H1330V302H1320ZM1337 263H1343V302H1337ZM1350 282H1359V302H1350ZM1366 255H1376V302H1366Z"/></g>
+</svg>

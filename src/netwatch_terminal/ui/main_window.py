@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..core.distributions import DISTRIBUTIONS
+from .hud import HudCanvas
 
 MODULES = ("DASHBOARD", "TERMINAL", "SYSTEM", "NETWORK", "FILES", "LAUNCHER", "BREACHLAB", "SETTINGS")
 
@@ -36,8 +37,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("NETWATCH // TERMINAL — Interface Preview")
         self.setMinimumSize(1000, 650)
-        self.resize(1360, 850)
-        root = QWidget()
+        self.resize(1440, 900)
+        root = HudCanvas()
         self.setCentralWidget(root)
         shell = QHBoxLayout(root)
         shell.setContentsMargins(0, 0, 0, 0)
@@ -49,9 +50,10 @@ class MainWindow(QMainWindow):
         nav.setContentsMargins(18, 28, 18, 22)
         nav.setSpacing(9)
         nav.addWidget(label("NETWATCH", "brand"))
+        nav.addWidget(label("▰▰▰▰▰▰▰▰▰▰▰▰", "accent"))
         nav.addWidget(label("// LOCAL OPERATIONS", "muted"))
         nav.addSpacing(30)
-        nav.addWidget(label("WORKSPACE", "muted"))
+        nav.addWidget(label("ACCESS // MODULES", "muted"))
         self.group = QButtonGroup(self)
         self.buttons = []
         for index, name in enumerate(MODULES):
@@ -67,14 +69,14 @@ class MainWindow(QMainWindow):
         shell.addWidget(sidebar)
         content = QVBoxLayout()
         content.setContentsMargins(30, 22, 30, 12)
-        content.setSpacing(18)
+        content.setSpacing(12)
         shell.addLayout(content, 1)
         top = QHBoxLayout()
         workspace = label("PERSONAL CONSOLE  /  WORKSPACE 01", "muted")
         workspace.setWordWrap(False)
         top.addWidget(workspace)
         top.addStretch()
-        offline = label("●  OFFLINE BY DESIGN", "accent")
+        offline = label("● LOCAL / UI PREVIEW", "ribbon")
         offline.setWordWrap(False)
         top.addWidget(offline)
         content.addLayout(top)
@@ -92,7 +94,7 @@ class MainWindow(QMainWindow):
             self.pages.addWidget(self.placeholder_page(name, descriptions[name]))
         self.pages.addWidget(self.settings_page())
         content.addWidget(self.pages, 1)
-        content.addWidget(label("NETWATCH // TERMINAL     /     ORIGINAL INTERFACE     /     STAGE 01", "muted"))
+        content.addWidget(label("▰▰  SESSION LOCAL     //     INPUT ENGINE: PREVIEW     //     NW–01", "muted"))
         self.group.idClicked.connect(self.navigate)
         self.statusBar().showMessage("INTERFACE PREVIEW  •  Ctrl+1 Dashboard  /  Ctrl+2 Terminal  /  Ctrl+L Input")
         for index in range(len(MODULES)):
@@ -111,8 +113,14 @@ class MainWindow(QMainWindow):
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(0, 8, 0, 0)
-        layout.setSpacing(15)
-        self.heading(layout, "01 / INTERACTIVE WORKSPACE", "NETRUNNER//SHELL", "Choose your Linux profile. Explore its syntax before the command engine arrives.")
+        layout.setSpacing(9)
+        self.heading(layout, "TERMINAL ACCESS  //  NW–01", "NETRUNNER//SHELL", "LINUX SYNTAX INTERFACE  /  LOCAL WORKSPACE")
+        session = QHBoxLayout()
+        self.profile_readout = label("", "readout")
+        session.addWidget(self.profile_readout, 1)
+        session.addWidget(label("EXECUTION  /  PREVIEW", "readout"), 1)
+        session.addWidget(label("BUFFER  [ · · · · · · ]", "readout"), 1)
+        layout.addLayout(session)
         toolbar = QHBoxLayout()
         toolbar.addWidget(label("LINUX PROFILE", "muted"))
         self.distribution = QComboBox()
@@ -126,7 +134,7 @@ class MainWindow(QMainWindow):
         middle = QHBoxLayout()
         terminal, terminal_layout = panel()
         terminal_layout.setContentsMargins(0, 0, 0, 0)
-        terminal_layout.addWidget(label("   SESSION 01    /    SYNTAX PREVIEW", "accent"))
+        terminal_layout.addWidget(label("▣  COMMAND INTERFACE   /   SESSION 01", "section"))
         self.output = QPlainTextEdit()
         self.output.setReadOnly(True)
         self.output.setAccessibleName("Terminal preview output")
@@ -135,7 +143,7 @@ class MainWindow(QMainWindow):
         middle.addWidget(terminal, 3)
         reference, reference_layout = panel()
         reference.setMinimumWidth(250)
-        reference_layout.addWidget(label("SYNTAX//REFERENCE", "accent"))
+        reference_layout.addWidget(label("◇  SYNTAX//REFERENCE", "section"))
         reference_layout.addWidget(label("Common across profiles", "muted"))
         reference_layout.addWidget(label("pwd         current directory\nls -a       include hidden\ncd <path>   change directory\ncat <file>  read text\nmkdir <dir> create directory"))
         reference_layout.addSpacing(15)
@@ -171,12 +179,13 @@ class MainWindow(QMainWindow):
     def update_profile(self, index):
         profile = DISTRIBUTIONS[index]
         self.profile_info.setText(f"{profile.shell.upper()}  /  {profile.manager.upper()}")
+        self.profile_readout.setText(f"PROFILE  /  {profile.name.upper()}")
         self.prompt.setText(f"operator@{profile.slug}:~$")
         self.syntax.setText(f"Refresh / update\n{profile.refresh}\n\nInstall\n{profile.install}\n\nSearch\n{profile.search}")
         self.output.setPlainText(
-            "NETWATCH TERMINAL  [version 0.1.0]\n"
-            "──────────────────────────────────\n\n"
-            "  Your local workspace is ready.\n\n"
+            "// NETWATCH : LOCAL TERMINAL\n"
+            "────────────────────────────────────\n\n"
+            "  ◇  SYNTAX PROFILE LOADED\n\n"
             f"  PROFILE    {profile.name}\n"
             f"  FAMILY     {profile.family}\n"
             f"  SHELL      {profile.shell} (reference)\n\n"
@@ -186,7 +195,8 @@ class MainWindow(QMainWindow):
             "  INTERFACE PREVIEW\n"
             "  Commands are not executed in this version.\n"
             "  The safe command engine is planned for stage 2.\n\n"
-            "  No shell processes. No network requests.\n"
+            "  ────────────────────────────────\n"
+            "  LOCAL ONLY  /  NO SHELL PROCESS\n"
         )
 
     def preview_input(self):
