@@ -1,0 +1,36 @@
+name: Desktop checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Qt runtime libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest -q
+      - name: Render application
+        run: python -m netwatch_terminal --screenshot docs/terminal-preview.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preview-${{ runner.os }}
+          path: docs/terminal-preview.png
+      - name: Build Windows executable
+        if: runner.os == 'Windows'
+        run: python -m PyInstaller --noconfirm --windowed --onedir --name NetwatchTerminal src/netwatch_terminal/__main__.py --paths src
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: NetwatchTerminal-Windows-x64
+          path: dist/NetwatchTerminal/
