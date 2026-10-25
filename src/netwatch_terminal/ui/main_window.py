@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(0, 8, 0, 0)
-        layout.setSpacing(9)
+        layout.setSpacing(6)
         self.heading(layout, "TERMINAL ACCESS  //  NW–01", "NETRUNNER//SHELL", "LINUX SYNTAX INTERFACE  /  LOCAL WORKSPACE")
         session = QHBoxLayout()
         self.profile_readout = label("", "readout")
@@ -136,6 +136,8 @@ class MainWindow(QMainWindow):
         terminal_layout.setContentsMargins(0, 0, 0, 0)
         terminal_layout.addWidget(label("▣  COMMAND INTERFACE   /   SESSION 01", "section"))
         self.output = QPlainTextEdit()
+        # Keep the console usable with Windows font metrics at 1000×650.
+        self.output.setMinimumHeight(150)
         self.output.setReadOnly(True)
         self.output.setAccessibleName("Terminal preview output")
         self.output.document().setMaximumBlockCount(250)
