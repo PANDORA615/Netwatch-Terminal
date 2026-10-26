@@ -43,7 +43,7 @@ class Worker(QThread):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, settings=None):
+    def __init__(self, settings=None, monitoring=True):
         super().__init__()
         self.settings=settings or Settings(); self.engine=Engine()
         self.texts=[]; self.workers=[]; self.history=[]; self.history_index=0; self.busy=False
@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         self.group=QButtonGroup(self); self.buttons=[]
         for i,name in enumerate(MODULES):
             b=QPushButton(); b.setCheckable(True); self.group.addButton(b,i); self.buttons.append(b); nav.addWidget(b)
-        nav.addStretch(); nav.addWidget(label('v0.2.0 / LOCAL','accent'))
+        nav.addStretch(); nav.addWidget(label('v0.2.1 / LOCAL','accent'))
         exit_button=self.button('Exit','Выход',self.close); nav.addWidget(exit_button)
         shell.addWidget(sidebar)
         content=QVBoxLayout(); content.setContentsMargins(25,18,25,12); content.setSpacing(8); shell.addLayout(content,1)
@@ -82,8 +82,9 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence('Escape'),self).activated.connect(self.leave_fullscreen)
         self.apply_language(); self.navigate(1)
         self.command_input.setFocus()
-        self.metrics_timer=QTimer(self); self.metrics_timer.timeout.connect(self.refresh_metrics); self.metrics_timer.start(2000)
-        self.refresh_metrics()
+        self.metrics_timer=QTimer(self); self.metrics_timer.timeout.connect(self.refresh_metrics)
+        if monitoring:
+            self.metrics_timer.start(2000); self.refresh_metrics()
 
     def tr2(self,en,ru): return ru if self.settings.data.get('language')=='ru' else en
     def lbl(self,en,ru,kind=None):
@@ -97,7 +98,7 @@ class MainWindow(QMainWindow):
         worker=Worker(task); self.workers.append(worker)
         worker.done.connect(callback)
         def cleanup():
-            self.workers.remove(worker)
+            if worker in self.workers: self.workers.remove(worker)
             if getattr(self,'closing',False) and not self.workers: QTimer.singleShot(0,self.close)
         worker.finished.connect(cleanup)
         worker.start()
@@ -134,7 +135,7 @@ class MainWindow(QMainWindow):
         self.submit_button=self.button('Execute ↵','Выполнить ↵',self.submit); row.addWidget(self.submit_button); box.addLayout(row)
         box.addWidget(self.lbl('run <program> [args] • help • Package managers are reference only','run <программа> [аргументы] • help • Пакетные менеджеры — только справка','muted'))
         self.distribution.currentIndexChanged.connect(self.update_profile); self.update_profile(self.distribution.currentIndex())
-        self.output.setPlainText('NETWATCH 0.2.0\n\n'+self.tr2('Local command engine ready. Type help.','Локальный терминал готов. Введите help.'))
+        self.output.setPlainText('NETWATCH 0.2.1\n\n'+self.tr2('Local command engine ready. Type help.','Локальный терминал готов. Введите help.'))
         return w
     def update_profile(self,index):
         d=DISTRIBUTIONS[index]; self.settings.data['profile']=index

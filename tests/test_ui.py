@@ -17,7 +17,7 @@ def settle(app,window):
 @pytest.fixture
 def window(app,tmp_path):
     s=Settings(tmp_path/'settings.json'); s.data['fullscreen']=False
-    w=MainWindow(s); w.engine.cwd=tmp_path; w.show(); app.processEvents()
+    w=MainWindow(s, monitoring=False); w.engine.cwd=tmp_path; w.show(); app.processEvents()
     yield w
     w.metrics_timer.stop(); settle(app,w); w.close(); app.processEvents()
 

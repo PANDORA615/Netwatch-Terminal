@@ -26,7 +26,7 @@ def main(argv=None):
     parser.add_argument("--screenshot", type=Path, help="Save a screenshot and exit")
     args = parser.parse_args(argv)
     app = create_application(sys.argv[:1])
-    window = MainWindow()
+    window = MainWindow(monitoring=not args.screenshot)
     window.show() if args.screenshot or not window.settings.data.get("fullscreen") else window.showFullScreen()
     exit_status = 0
     if args.screenshot:

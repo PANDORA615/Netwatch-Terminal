@@ -1,4 +1,4 @@
-NETWATCH Terminal 0.2.0 — рабочее desktop-приложение для Windows 10/11 x64.
+NETWATCH Terminal 0.2.1 — рабочее desktop-приложение для Windows 10/11 x64.
 
 ## Скачать
 
