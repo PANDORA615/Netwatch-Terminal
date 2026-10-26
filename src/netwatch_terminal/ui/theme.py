@@ -23,6 +23,9 @@ QComboBox { padding: 10px; background: #22251B; color: #E3F0BB; border: 1px soli
 QComboBox QAbstractItemView { background: #171B1A; color: #E3F0BB; selection-background-color: #DCFA63; selection-color: #171C0D; }
 QLineEdit { padding: 13px; background: #12151B; border: 1px solid #869451; color: #E6F7BA; selection-background-color: #52652A; }
 QPlainTextEdit { padding: 18px; border: none; background: #11121C; color: #C7D49F; selection-background-color: #52652A; }
+QTreeView, QListWidget { background: #11121C; color: #D4DBB4; border: 1px solid #616641; }
+QHeaderView::section { background: #22251B; color: #DCFA63; padding: 6px; }
+QPushButton:disabled { color: #68715A; border-color: #303529; }
 QScrollArea { border: none; }
 QScrollBar:vertical { background: #11121C; width: 8px; }
 QScrollBar::handle:vertical { background: #7D8A49; min-height: 24px; }

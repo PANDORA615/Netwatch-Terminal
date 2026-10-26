@@ -27,7 +27,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     app = create_application(sys.argv[:1])
     window = MainWindow()
-    window.show()
+    window.show() if args.screenshot or not window.settings.data.get("fullscreen") else window.showFullScreen()
     exit_status = 0
     if args.screenshot:
         def capture():

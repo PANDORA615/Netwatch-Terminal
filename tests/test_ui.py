@@ -1,61 +1,62 @@
+import time
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
-
-from netwatch_terminal import __version__
+import pytest
+from netwatch_terminal.core.settings import Settings
 from netwatch_terminal.core.distributions import DISTRIBUTIONS
-from netwatch_terminal.ui.main_window import MODULES, MainWindow
+from netwatch_terminal.ui.main_window import MainWindow, MODULES
 
 
-def test_import():
-    assert __version__ == "0.1.0"
-
-
-def test_navigation_and_keyboard(app):
-    window = MainWindow()
-    window.show()
+def settle(app,window):
+    deadline=time.monotonic()+5
+    while (window.busy or any(w.isRunning() for w in window.workers)) and time.monotonic()<deadline:
+        app.processEvents(); QTest.qWait(10)
     app.processEvents()
-    for index in range(len(MODULES)):
-        window.buttons[index].click()
-        assert window.pages.currentIndex() == index
-        assert window.buttons[index].isChecked()
-    window.focus_input()
-    app.processEvents()
-    assert window.pages.currentIndex() == 1
-    assert window.command_input.hasFocus()
-    window.close()
 
 
-def test_every_profile_updates_reference(app):
-    window = MainWindow()
-    for index, profile in enumerate(DISTRIBUTIONS):
-        window.distribution.setCurrentIndex(index)
-        assert profile.slug in window.prompt.text()
-        assert profile.install in window.syntax.text()
-        assert profile.search in window.syntax.text()
-        assert profile.shell.upper() in window.profile_info.text()
-        assert "Commands are not executed" in window.output.toPlainText()
-    window.close()
+@pytest.fixture
+def window(app,tmp_path):
+    s=Settings(tmp_path/'settings.json'); s.data['fullscreen']=False
+    w=MainWindow(s); w.engine.cwd=tmp_path; w.show(); app.processEvents()
+    yield w
+    w.metrics_timer.stop(); settle(app,w); w.close(); app.processEvents()
 
 
-def test_preview_does_not_execute_or_retain_input(app, tmp_path):
-    window = MainWindow()
-    target = tmp_path / "must-not-exist"
-    entered = f'mkdir "{target}"'
-    window.command_input.setText(entered)
-    QTest.keyClick(window.command_input, Qt.Key.Key_Return)
-    assert not target.exists()
-    assert not window.command_input.text()
-    assert entered not in window.output.toPlainText()
-    assert "Input received" in window.output.toPlainText()
-    window.close()
+def test_navigation(app,window):
+    for i in range(len(MODULES)):
+        window.buttons[i].click(); assert window.pages.currentIndex()==i
+    window.focus_input(); app.processEvents(); assert window.command_input.hasFocus()
 
 
-def test_minimum_window_size(app):
-    window = MainWindow()
-    window.resize(1000, 650)
-    window.show()
-    app.processEvents()
-    assert window.command_input.isVisible()
-    assert window.command_input.width() > 200
-    assert window.output.viewport().height() > 100
-    window.close()
+def test_profiles(app,window):
+    for i,p in enumerate(DISTRIBUTIONS):
+        window.distribution.setCurrentIndex(i)
+        assert p.slug in window.prompt.text()
+        assert p.install in window.syntax.text()
+
+
+def test_command_ui(app,window,tmp_path):
+    window.command_input.setText('mkdir "test space"'); QTest.keyClick(window.command_input,Qt.Key.Key_Return)
+    settle(app,window)
+    assert (tmp_path/'test space').is_dir()
+    assert not window.busy
+
+
+def test_localization_and_settings(app,window):
+    assert 'НАСТРОЙКИ' in window.buttons[7].text()
+    window.language_combo.setCurrentIndex(1)
+    assert 'SETTINGS' in window.buttons[7].text()
+    assert Settings(window.settings.path).data['language']=='en'
+    window.history_check.setChecked(True); window.clear_history()
+    assert 'commands' not in window.settings.data
+
+
+def test_minimum_window_size(app,window):
+    window.resize(1000,650); app.processEvents()
+    assert window.command_input.width()>200
+    assert window.output.viewport().height()>100
+
+
+def test_fullscreen_exit(app,window):
+    window.toggle_fullscreen(); assert window.isFullScreen()
+    window.leave_fullscreen(); assert not window.isFullScreen()

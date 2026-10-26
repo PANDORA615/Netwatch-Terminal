@@ -29,6 +29,30 @@ jobs:
       - name: Build Windows executable
         if: runner.os == 'Windows'
         run: python -m PyInstaller --noconfirm --windowed --onedir --name NetwatchTerminal src/netwatch_terminal/__main__.py --paths src
+      - name: Smoke test packaged executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $process = Start-Process dist/NetwatchTerminal/NetwatchTerminal.exe -ArgumentList '--screenshot packaged-smoke.png' -PassThru
+          if (-not $process.WaitForExit(30000)) { $process.Kill(); throw 'Executable timed out' }
+          if ($process.ExitCode -ne 0 -or -not (Test-Path packaged-smoke.png)) { throw 'Executable smoke test failed' }
+      - name: Build Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $compiler = Get-ChildItem "${env:ProgramFiles(x86)}/Inno Setup */ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $compiler) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed' }
+            $compiler = Get-ChildItem "${env:ProgramFiles(x86)}/Inno Setup */ISCC.exe" | Select-Object -First 1
+          }
+          & $compiler.FullName installer/netwatch.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: NetwatchTerminal-Installer-x64
+          path: installer-output/NetwatchTerminal-Setup-x64.exe
       - uses: actions/upload-artifact@v4
         if: runner.os == 'Windows'
         with:
@@ -46,6 +70,10 @@ jobs:
         with:
           name: NetwatchTerminal-Windows-x64
           path: portable
+      - uses: actions/download-artifact@v4
+        with:
+          name: NetwatchTerminal-Installer-x64
+          path: installer-asset
       - name: Package Windows portable build
         working-directory: portable
         run: zip -r ../NetwatchTerminal-Windows-x64.zip .
@@ -54,6 +82,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: >-
-          gh release create "$RELEASE_TAG" NetwatchTerminal-Windows-x64.zip
+          gh release create "$RELEASE_TAG" NetwatchTerminal-Windows-x64.zip installer-asset/NetwatchTerminal-Setup-x64.exe
           --verify-tag --title "NETWATCH Terminal $RELEASE_TAG — Windows x64"
           --notes-file docs/RELEASE_NOTES.md --latest

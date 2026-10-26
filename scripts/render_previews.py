@@ -5,13 +5,20 @@ from pathlib import Path
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
+import tempfile
+from netwatch_terminal.core.settings import Settings
 from netwatch_terminal.app import create_application
 from netwatch_terminal.ui.main_window import MainWindow
 
 
 def main():
     app = create_application([])
-    window = MainWindow()
+    temp = tempfile.TemporaryDirectory()
+    window = MainWindow(Settings(Path(temp.name) / 'settings.json'))
+    window.metrics_timer.stop()
+    while any(w.isRunning() for w in window.workers):
+        app.processEvents()
+    app.processEvents()
     window.show()
     output = Path(__file__).resolve().parents[1] / 'docs'
     output.mkdir(exist_ok=True)
@@ -19,6 +26,8 @@ def main():
         ('terminal-preview.png', 1, 0),
         ('dashboard-preview.png', 0, 0),
         ('arch-preview.png', 1, 3),
+        ('settings-preview.png', 7, 0),
+        ('breach-preview.png', 6, 0),
     ):
         window.distribution.setCurrentIndex(profile)
         window.navigate(page)
