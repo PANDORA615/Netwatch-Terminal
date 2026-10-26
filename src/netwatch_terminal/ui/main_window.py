@@ -96,7 +96,10 @@ class MainWindow(QMainWindow):
     def start(self,task,callback):
         worker=Worker(task); self.workers.append(worker)
         worker.done.connect(callback)
-        worker.finished.connect(lambda:self.workers.remove(worker))
+        def cleanup():
+            self.workers.remove(worker)
+            if getattr(self,'closing',False) and not self.workers: QTimer.singleShot(0,self.close)
+        worker.finished.connect(cleanup)
         worker.start()
     def save(self):
         try: self.settings.save()
@@ -256,7 +259,7 @@ class MainWindow(QMainWindow):
         self.render_game()
     def render_game(self):
         g=self.game; status=self.tr2('WIN','ПОБЕДА') if g.won else (self.tr2('BUFFER FULL','БУФЕР ЗАПОЛНЕН') if g.finished else self.tr2('CHOOSE A CELL','ВЫБЕРИТЕ ЯЧЕЙКУ'))
-        self.game_status.setText(f'{status}\nTARGET: {" ".join(g.target)}   BUFFER: {" ".join(g.buffer)} ({len(g.moves)}/6)   BEST: {self.settings.data.get("best","—")}')
+        self.game_status.setText(f'{status}\n{self.tr2("TARGET","ЦЕЛЬ")}: {" ".join(g.target)}   {self.tr2("BUFFER","БУФЕР")}: {" ".join(g.buffer)} ({len(g.moves)}/6)   {self.tr2("BEST","РЕКОРД")}: {self.settings.data.get("best","—")}')
         for i,b in enumerate(self.cells):
             r,c=divmod(i,5); b.setText(g.grid[r][c]+(' ✓' if (r,c) in g.moves else '')); b.setEnabled(g.allowed(r,c))
 
@@ -286,5 +289,6 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self,'Windows',str(exc))
     def closeEvent(self,event):
         if any(w.isRunning() for w in self.workers):
+            self.metrics_timer.stop(); self.closing=True
             self.statusBar().showMessage(self.tr2('Please wait for the operation to finish','Дождитесь завершения операции')); event.ignore(); return
         self.metrics_timer.stop(); event.accept()

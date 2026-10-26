@@ -32,3 +32,13 @@ Name: "{autodesktop}\NETWATCH Terminal"; Filename: "{app}\NetwatchTerminal.exe";
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "NetwatchTerminal"; ValueData: """{app}\NetwatchTerminal.exe"""; Tasks: startup; Flags: uninsdeletevalue
 [Run]
 Filename: "{app}\NetwatchTerminal.exe"; Description: "{cm:LaunchProgram,NETWATCH Terminal}"; Flags: nowait postinstall skipifsilent
+[Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  StartupCommand: String;
+begin
+  if CurUninstallStep = usUninstall then
+    if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'NetwatchTerminal', StartupCommand) then
+      if Pos(Lowercase(ExpandConstant('{app}\NetwatchTerminal.exe')), Lowercase(StartupCommand)) > 0 then
+        RegDeleteValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'NetwatchTerminal');
+end;
