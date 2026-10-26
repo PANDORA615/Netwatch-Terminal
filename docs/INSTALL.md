@@ -131,7 +131,7 @@ python3 -m venv .venv
 | Не найдены DLL / `_internal` | Полностью распакуйте готовую сборку; не переносите `.exe` отдельно. |
 | Ошибка скачивания pip | Проверьте интернет, настройки прокси и повторите команду. Не отключайте проверку сертификатов. |
 | Linux: Qt не загружает `xcb` | Проверьте наличие графического сеанса и системных библиотек Qt/XCB для вашего дистрибутива. |
-| Команды терминала ничего не делают | Обновитесь до 0.2.0; список поддерживаемых команд — `help`. Пакетные менеджеры и shell-конструкции не поддерживаются. |
+| Команды терминала ничего не делают | Обновитесь до 0.3.0; список поддерживаемых команд — `help`. Пакетные менеджеры и shell-конструкции не поддерживаются. |
 
 ## Разработчикам
 
@@ -141,7 +141,11 @@ python3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe -m netwatch_terminal --screenshot docs/terminal-preview.png
-.\.venv\Scripts\python.exe -m PyInstaller --noconfirm --windowed --onedir --name NetwatchTerminal src/netwatch_terminal/__main__.py --paths src
+.\.venv\Scripts\python.exe -m PyInstaller --noconfirm --windowed --onedir --name NetwatchTerminal src/netwatch_terminal/__main__.py --paths src --collect-data netwatch_terminal
 ```
 
 Результат Windows-сборки: `dist\NetwatchTerminal\NetwatchTerminal.exe` вместе с соседними файлами. Собирать Windows-версию нужно в Windows. CI проверяет Windows и Linux, однако проверка на чистой Windows 10/11 отдельно ещё требуется.
+
+## Звук и анимация
+
+Откройте Настройки: «Звуки интерфейса» и «Глитч-анимация при входе» выключаются независимо. Настройки сохраняются. Вход пропускается любой клавишей/кликом. Для нестандартной папки Steam добавьте Steam.exe в «Программы», затем введите `run steam`.

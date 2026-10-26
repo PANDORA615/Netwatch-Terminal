@@ -10,12 +10,13 @@ from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QFrame, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QPlainTextEdit, QPushButton, QScrollArea,
     QStackedWidget, QVBoxLayout, QWidget, QMessageBox, QFileDialog, QListWidget,
-    QTreeView, QGridLayout, QFileSystemModel)
+    QTreeView, QGridLayout, QFileSystemModel, QSizePolicy)
 from ..core.distributions import DISTRIBUTIONS
 from ..core.engine import Engine, COMMANDS, Result
 from ..core.settings import Settings, startup_enabled, set_startup
 from ..core.breach import Puzzle
 from .hud import HudCanvas
+from .effects import Sounds
 
 MODULES = ('DASHBOARD','TERMINAL','SYSTEM','NETWORK','FILES','LAUNCHER','BREACHLAB','SETTINGS')
 RUSSIAN = ('ОБЗОР','ТЕРМИНАЛ','СИСТЕМА','СЕТЬ','ФАЙЛЫ','ПРОГРАММЫ','BREACHLAB','НАСТРОЙКИ')
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
     def __init__(self, settings=None, monitoring=True):
         super().__init__()
         self.settings=settings or Settings(); self.engine=Engine()
+        self.sounds=Sounds(self.settings)
         self.texts=[]; self.workers=[]; self.history=[]; self.history_index=0; self.busy=False
         if self.settings.data.get('history'):
             self.history=list(self.settings.data.get('commands',[]))[-200:]
@@ -59,7 +61,7 @@ class MainWindow(QMainWindow):
         self.group=QButtonGroup(self); self.buttons=[]
         for i,name in enumerate(MODULES):
             b=QPushButton(); b.setCheckable(True); self.group.addButton(b,i); self.buttons.append(b); nav.addWidget(b)
-        nav.addStretch(); nav.addWidget(label('v0.2.1 / LOCAL','accent'))
+        nav.addStretch(); nav.addWidget(label('v0.3.0 / LOCAL','accent'))
         exit_button=self.button('Exit','Выход',self.close); nav.addWidget(exit_button)
         shell.addWidget(sidebar)
         content=QVBoxLayout(); content.setContentsMargins(25,18,25,12); content.setSpacing(8); shell.addLayout(content,1)
@@ -88,7 +90,9 @@ class MainWindow(QMainWindow):
 
     def tr2(self,en,ru): return ru if self.settings.data.get('language')=='ru' else en
     def lbl(self,en,ru,kind=None):
-        w=label(self.tr2(en,ru),kind); self.texts.append((w,en,ru)); return w
+        w=label(self.tr2(en,ru),kind)
+        if kind=='section': w.setMaximumHeight(38)
+        self.texts.append((w,en,ru)); return w
     def button(self,en,ru,callback):
         b=QPushButton(self.tr2(en,ru)); self.texts.append((b,en,ru)); b.clicked.connect(callback); return b
     def page(self,en,ru):
@@ -135,7 +139,7 @@ class MainWindow(QMainWindow):
         self.submit_button=self.button('Execute ↵','Выполнить ↵',self.submit); row.addWidget(self.submit_button); box.addLayout(row)
         box.addWidget(self.lbl('run <program> [args] • help • Package managers are reference only','run <программа> [аргументы] • help • Пакетные менеджеры — только справка','muted'))
         self.distribution.currentIndexChanged.connect(self.update_profile); self.update_profile(self.distribution.currentIndex())
-        self.output.setPlainText('NETWATCH 0.2.1\n\n'+self.tr2('Local command engine ready. Type help.','Локальный терминал готов. Введите help.'))
+        self.output.setPlainText('NETWATCH 0.3.0\n\n'+self.tr2('Local command engine ready. Type help.','Локальный терминал готов. Введите help.'))
         return w
     def update_profile(self,index):
         d=DISTRIBUTIONS[index]; self.settings.data['profile']=index
@@ -148,6 +152,7 @@ class MainWindow(QMainWindow):
     def submit(self):
         if self.busy: return
         text=self.command_input.text().strip()
+        self.engine.favorites=list(self.settings.data.get("favorites",[]))
         if not text: return
         self.command_input.clear()
         # Persistence is opt-in; omit launches and environment/file reads to limit sensitive history.
@@ -162,6 +167,7 @@ class MainWindow(QMainWindow):
                 if accepted:
                     self.start(lambda:self.engine.execute(text,True),done); return
                 result=Result(self.tr2('Cancelled','Отменено'))
+            self.sounds.play('click' if result.success else 'error')
             if result.action=='clear': self.output.clear()
             elif result.action=='breach': self.navigate(6)
             elif result.action=='history': self.output.appendPlainText('\n'.join(self.history) or self.tr2('History disabled or empty','История отключена или пуста'))
@@ -244,25 +250,62 @@ class MainWindow(QMainWindow):
         if row>=0:self.favorites.takeItem(row); self.settings.data['favorites']=[self.favorites.item(i).text() for i in range(self.favorites.count())]; self.save()
 
     def breach_page(self):
-        w,box=self.page('BREACH//LAB','BREACH//ЛАБОРАТОРИЯ'); self.game_status=label(''); box.addWidget(self.game_status)
-        box.addWidget(self.lbl('Start in the top row, then alternate column / row. Match the sequence in 6 moves.','Начните с верхнего ряда, затем чередуйте столбец / ряд. Соберите последовательность за 6 ходов.','muted'))
-        grid=QGridLayout(); self.cells=[]
-        for r in range(5):
-            for c in range(5):
-                b=QPushButton(); b.clicked.connect(lambda checked=False,r=r,c=c:self.game_move(r,c)); grid.addWidget(b,r,c); self.cells.append(b)
-        box.addLayout(grid); box.addWidget(self.button('New puzzle','Новая игра',self.new_game)); box.addWidget(self.button('Restart','Начать заново',self.restart_game)); self.new_game(); return w
-    def new_game(self):self.game=Puzzle(); self.render_game()
-    def restart_game(self):self.game.moves=[]; self.render_game()
+        w,box=self.page('BREACH//PROTOCOL','BREACH//ПРОТОКОЛ')
+        top=QHBoxLayout(); self.time_label=label('60.00','accent'); self.time_label.setMinimumWidth(150)
+        top.addWidget(self.lbl('TIME REMAINING','ОСТАЛОСЬ ВРЕМЕНИ','muted')); top.addWidget(self.time_label)
+        self.buffer_label=label('','readout'); top.addWidget(self.buffer_label,1); box.addLayout(top)
+        box.addWidget(self.lbl('First move: top row. Then alternate column / row. Complete every sequence in 6 slots.','Первый ход — верхний ряд. Затем столбец / ряд. Соберите все последовательности за 6 ходов.','muted'))
+        columns=QHBoxLayout(); matrix,matrix_box=panel(); matrix_box.addWidget(self.lbl('▣ CODE MATRIX','▣ МАТРИЦА КОДОВ','section'))
+        grid=QGridLayout(); grid.setSpacing(4); self.cells=[]
+        matrix_box.setStretch(1,1)
+        for r in range(7):
+            grid.setRowStretch(r,1)
+            for c in range(7):
+                button=QPushButton(); button.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding); button.setMinimumHeight(32); button.setMaximumHeight(16777215); button.setStyleSheet('text-align:center; padding:6px; font-size:16px;')
+                button.clicked.connect(lambda checked=False,r=r,c=c:self.game_move(r,c)); grid.addWidget(button,r,c); self.cells.append(button)
+        matrix_box.addLayout(grid,1); columns.addWidget(matrix,3)
+        targets,target_box=panel(); target_box.addWidget(self.lbl('◇ SEQUENCES TO UPLOAD','◇ ПОСЛЕДОВАТЕЛЬНОСТИ','section'))
+        self.target_labels=[]
+        for i in range(3):
+            target_box.addWidget(self.lbl(f'DATA STREAM / 0{i+1}',f'ПОТОК ДАННЫХ / 0{i+1}','muted'))
+            row=label('','readout'); target_box.addWidget(row); self.target_labels.append(row)
+        target_box.addStretch(); self.game_status=label('','accent'); target_box.addWidget(self.game_status); columns.addWidget(targets,2); box.addLayout(columns,1)
+        controls=QHBoxLayout(); controls.addWidget(self.button('New puzzle','Новая игра',self.new_game)); controls.addWidget(self.button('Restart','Начать заново',self.restart_game)); controls.addWidget(self.button('Back to terminal','Вернуться в терминал',self.focus_input)); box.addLayout(controls)
+        self.game_timer=QTimer(self); self.game_timer.setInterval(100); self.game_timer.timeout.connect(self.tick_game); self.deadline=None
+        self.new_game(); return w
+    def new_game(self):
+        self.game_timer.stop(); self.deadline=None; self.game=Puzzle(); self.render_game()
+    def restart_game(self):
+        self.game_timer.stop(); self.deadline=None; self.game.restart(); self.render_game()
+    def tick_game(self):
+        remaining=max(0,self.deadline-time.monotonic()) if self.deadline else self.game.duration
+        self.time_label.setText(f'{remaining:05.2f}')
+        if remaining<=0 and not self.game.finished:
+            self.game.expired=True; self.game_timer.stop(); self.sounds.play('error'); self.render_game()
     def game_move(self,r,c):
-        self.game.choose(r,c)
-        if self.game.won:
-            best=min(int(self.settings.data.get('best',7)),len(self.game.moves)); self.settings.data['best']=best; self.save()
+        self.tick_game()
+        if not self.game.allowed(r,c):return
+        if self.deadline is None:self.deadline=time.monotonic()+self.game.duration; self.game_timer.start()
+        before=sum(self.game.completed); self.game.choose(r,c)
+        self.sounds.play('success' if sum(self.game.completed)>before else 'click')
+        if self.game.finished:
+            self.game_timer.stop()
+            if self.game.won:
+                best=min(int(self.settings.data.get('breach_best_v3',7)),len(self.game.moves)); self.settings.data['breach_best_v3']=best; self.save()
+            else:self.sounds.play('error')
         self.render_game()
     def render_game(self):
-        g=self.game; status=self.tr2('WIN','ПОБЕДА') if g.won else (self.tr2('BUFFER FULL','БУФЕР ЗАПОЛНЕН') if g.finished else self.tr2('CHOOSE A CELL','ВЫБЕРИТЕ ЯЧЕЙКУ'))
-        self.game_status.setText(f'{status}\n{self.tr2("TARGET","ЦЕЛЬ")}: {" ".join(g.target)}   {self.tr2("BUFFER","БУФЕР")}: {" ".join(g.buffer)} ({len(g.moves)}/6)   {self.tr2("BEST","РЕКОРД")}: {self.settings.data.get("best","—")}')
-        for i,b in enumerate(self.cells):
-            r,c=divmod(i,5); b.setText(g.grid[r][c]+(' ✓' if (r,c) in g.moves else '')); b.setEnabled(g.allowed(r,c))
+        g=self.game; self.buffer_label.setText('BUFFER / БУФЕР:  '+'  '.join(g.buffer+['[  ]']*(g.capacity-len(g.moves))))
+        if self.deadline is None:self.time_label.setText(f'{g.duration:.2f}')
+        for i,(row,complete) in enumerate(zip(self.target_labels,g.completed)):
+            row.setText(('✓  ' if complete else '◇  ')+'   '.join(g.targets[i]))
+            row.setStyleSheet('color: #A8E0B3;' if complete else '')
+        status=self.tr2('UPLOAD COMPLETE','ЗАГРУЗКА ЗАВЕРШЕНА') if g.won else (self.tr2('CONNECTION LOST','СОЕДИНЕНИЕ ПОТЕРЯНО') if g.finished else self.tr2('SELECT A CODE','ВЫБЕРИТЕ КОД'))
+        self.game_status.setText(status+'\n'+self.tr2('BEST: ','РЕКОРД: ')+str(self.settings.data.get('breach_best_v3','—')))
+        for i,button in enumerate(self.cells):
+            r,c=divmod(i,g.size); used=(r,c) in g.moves
+            button.setText(g.grid[r][c] if not used else '×'); button.setEnabled(g.allowed(r,c))
+            button.setStyleSheet('text-align:center; padding:6px; font-size:16px;'+('background:#293c30;color:#A8E0B3;' if used else ('background:#333a22;color:#edffa3;' if g.allowed(r,c) else '')))
 
     def settings_page(self):
         w,box=self.page('SETTINGS','НАСТРОЙКИ'); self.language_combo=QComboBox(); self.language_combo.addItems(['Русский','English']); self.language_combo.setCurrentIndex(0 if self.settings.data.get('language')=='ru' else 1)
@@ -274,7 +317,13 @@ class MainWindow(QMainWindow):
         self.history_check.toggled.connect(self.change_history); box.addWidget(self.history_check)
         box.addWidget(self.button('Clear history','Очистить историю',self.clear_history))
         self.startup_check=QCheckBox(); self.texts.append((self.startup_check,'Start with Windows (current user)','Запускать при входе в Windows (текущий пользователь)')); self.startup_check.setChecked(startup_enabled()); self.startup_check.setEnabled(os.name=='nt'); self.startup_check.toggled.connect(self.change_startup); box.addWidget(self.startup_check)
-        box.addWidget(self.lbl('No animations. Fullscreen covers the taskbar; Esc returns to window. Autostart is optional and can be disabled here.','Анимации отключены. Полный экран закрывает панель задач; Esc возвращает окно. Автозапуск включается только по желанию.','muted')); box.addStretch(); return w
+        self.sound_check=QCheckBox(); self.texts.append((self.sound_check,'Interface sounds','Звуки интерфейса')); self.sound_check.setChecked(self.settings.data.get('sound',True)); self.sound_check.toggled.connect(self.change_sound); box.addWidget(self.sound_check)
+        self.animations_check=QCheckBox(); self.texts.append((self.animations_check,'Glitch entry animation','Глитч-анимация при входе')); self.animations_check.setChecked(self.settings.data.get('animations',True)); self.animations_check.toggled.connect(lambda v:self.preference('animations',v)); box.addWidget(self.animations_check)
+        box.addWidget(self.lbl('Entry animation can be skipped with any key or click. Sound and motion can be disabled independently.','Анимацию входа можно пропустить любой клавишей или кликом. Звук и анимация отключаются независимо.','muted')); box.addStretch(); return w
+    def change_sound(self,value):
+        self.preference('sound',value)
+        if not value:self.sounds.stop()
+        else:self.sounds.play('click')
     def preference(self,key,value):self.settings.data[key]=value; self.save()
     def change_language(self,index):
         self.preference('language','ru' if index==0 else 'en'); self.apply_language(); self.update_profile(self.distribution.currentIndex()); self.render_game()
@@ -292,4 +341,4 @@ class MainWindow(QMainWindow):
         if any(w.isRunning() for w in self.workers):
             self.metrics_timer.stop(); self.closing=True
             self.statusBar().showMessage(self.tr2('Please wait for the operation to finish','Дождитесь завершения операции')); event.ignore(); return
-        self.metrics_timer.stop(); event.accept()
+        self.metrics_timer.stop(); self.game_timer.stop(); self.sounds.stop(); event.accept()

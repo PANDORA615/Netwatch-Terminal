@@ -28,13 +28,14 @@ jobs:
           path: docs/terminal-preview.png
       - name: Build Windows executable
         if: runner.os == 'Windows'
-        run: python -m PyInstaller --noconfirm --windowed --onedir --name NetwatchTerminal src/netwatch_terminal/__main__.py --paths src
+        run: python -m PyInstaller --noconfirm --windowed --onedir --name NetwatchTerminal src/netwatch_terminal/__main__.py --paths src --collect-data netwatch_terminal
       - name: Smoke test packaged executable
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $process = Start-Process dist/NetwatchTerminal/NetwatchTerminal.exe -ArgumentList '--screenshot packaged-smoke.png' -PassThru
           if (-not $process.WaitForExit(30000)) { $process.Kill(); throw 'Executable timed out' }
+          if (-not (Test-Path dist/NetwatchTerminal/_internal/netwatch_terminal/assets/sounds/boot.wav)) { throw 'Sound assets missing' }
           if ($process.ExitCode -ne 0 -or -not (Test-Path packaged-smoke.png)) { throw 'Executable smoke test failed' }
       - name: Build Windows installer
         if: runner.os == 'Windows'

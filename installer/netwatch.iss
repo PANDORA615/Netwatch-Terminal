@@ -1,4 +1,4 @@
-#define AppVersion "0.2.1"
+#define AppVersion "0.3.0"
 [Setup]
 AppId={{8374260A-1672-4BC0-9782-6AD2FCDE7F22}
 AppName=NETWATCH Terminal

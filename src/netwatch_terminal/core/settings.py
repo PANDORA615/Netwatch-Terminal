@@ -14,7 +14,7 @@ def config_path():
 class Settings:
     def __init__(self, path=None):
         self.path = Path(path) if path else config_path()
-        self.data = dict(language='ru', fullscreen=True, history=False, profile=0, favorites=[])
+        self.data = dict(language='ru', fullscreen=True, history=False, profile=0, favorites=[], sound=True, animations=True)
         try:
             values = json.loads(self.path.read_text(encoding='utf-8'))
             if isinstance(values, dict):
@@ -23,8 +23,8 @@ class Settings:
             pass
         if self.data.get('language') not in ('ru','en'): self.data['language']='ru'
         if not isinstance(self.data.get('profile'),int): self.data['profile']=0
-        for key in ('fullscreen','history'):
-            if not isinstance(self.data.get(key),bool): self.data[key]=(key=='fullscreen')
+        for key in ('fullscreen','history','sound','animations'):
+            if not isinstance(self.data.get(key),bool): self.data[key]=(key!='history')
         for key in ('favorites','commands'):
             values=self.data.get(key,[])
             self.data[key]=[v for v in values if isinstance(v,str)][:200] if isinstance(values,list) else []

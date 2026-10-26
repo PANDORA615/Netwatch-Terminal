@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import time
 import psutil
+from .programs import resolve_program
 
 COMMANDS = 'help clear pwd ls cd cat mkdir touch cp mv rm rmdir head tail grep wc sort uniq stat du df basename dirname realpath echo date whoami hostname uname uptime ps kill which env printenv run open translate explain preview history breach'.split()
 
@@ -52,6 +53,7 @@ class Result:
 class Engine:
     def __init__(self, cwd=None):
         self.cwd = Path(cwd or Path.home()).resolve()
+        self.favorites = []
 
     def path(self, value):
         p = Path(value).expanduser()
@@ -140,7 +142,7 @@ class Engine:
                 if cmd == 'kill':
                     proc = psutil.Process(int(a[0])); detail = f'\n{proc.name()} / {proc.username()}'
                 if cmd == 'run':
-                    target = Path(shutil.which(a[0]) or str(self.path(a[0]))).resolve(strict=True)
+                    target = resolve_program(a[0],self.cwd,self.favorites)
                     detail = f'\n{target}'
                 if cmd == 'rm': detail = '\nPermanent deletion / Безвозвратное удаление файла'
                 return Result(confirmation=f'{cmd}: {" ".join(a)}{detail}\nConfirm action / Подтвердите действие.')
@@ -163,8 +165,7 @@ class Engine:
                 if pid in (0,1,4,os.getpid()) or proc.username() != psutil.Process().username(): raise ValueError('Protected process / Защищённый процесс')
                 proc.terminate()
             if cmd == 'run':
-                executable = shutil.which(a[0]) or str(self.path(a[0]))
-                target = Path(executable).resolve(strict=True)
+                target = resolve_program(a[0],self.cwd,self.favorites)
                 if not target.is_file() or (os.name == 'nt' and target.suffix.lower() != '.exe'):
                     raise ValueError('Select an executable (.exe on Windows)')
                 proc = subprocess.Popen([str(target), *a[1:]], cwd=self.cwd, shell=False, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

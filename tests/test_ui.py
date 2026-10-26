@@ -16,7 +16,7 @@ def settle(app,window):
 
 @pytest.fixture
 def window(app,tmp_path):
-    s=Settings(tmp_path/'settings.json'); s.data['fullscreen']=False
+    s=Settings(tmp_path/'settings.json'); s.data['fullscreen']=False; s.data['sound']=False
     w=MainWindow(s, monitoring=False); w.engine.cwd=tmp_path; w.show(); app.processEvents()
     yield w
     w.metrics_timer.stop(); settle(app,w); w.close(); app.processEvents()
@@ -60,3 +60,22 @@ def test_minimum_window_size(app,window):
 def test_fullscreen_exit(app,window):
     window.toggle_fullscreen(); assert window.isFullScreen()
     window.leave_fullscreen(); assert not window.isFullScreen()
+
+
+def test_breach_ui_and_timer(app,window):
+    assert len(window.cells)==49 and len(window.target_labels)==3
+    for r,c in window.game.solution:
+        if window.game.finished:break
+        window.game_move(r,c)
+    assert window.game.won and not window.game_timer.isActive()
+    window.restart_game(); assert not window.game.moves
+    window.game_move(*window.game.solution[0])
+    window.deadline=time.monotonic()-1; window.tick_game()
+    assert window.game.expired and not window.game_timer.isActive()
+
+
+def test_effect_preferences(app,window):
+    window.animations_check.setChecked(False)
+    window.sound_check.setChecked(False)
+    data=Settings(window.settings.path).data
+    assert not data['animations'] and not data['sound']

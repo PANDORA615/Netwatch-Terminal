@@ -28,6 +28,11 @@ def main(argv=None):
     app = create_application(sys.argv[:1])
     window = MainWindow(monitoring=not args.screenshot)
     window.show() if args.screenshot or not window.settings.data.get("fullscreen") else window.showFullScreen()
+    if not args.screenshot:
+        window.sounds.play('boot')
+        if window.settings.data.get('animations',True):
+            from .ui.effects import BootOverlay
+            window.boot_overlay=BootOverlay(window.centralWidget())
     exit_status = 0
     if args.screenshot:
         def capture():

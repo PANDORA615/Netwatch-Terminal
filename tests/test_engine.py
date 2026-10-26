@@ -95,3 +95,31 @@ def test_startup_toggle_without_touching_registry(monkeypatch):
     assert args[1]=='NetwatchTerminal' and 'netwatch_terminal' in args[-1]
     settings.set_startup(False)
     assert registry.DeleteValue.call_args.args[1]=='NetwatchTerminal'
+
+
+def test_short_program_names(tmp_path,monkeypatch):
+    from netwatch_terminal.core.programs import resolve_program
+    import netwatch_terminal.core.programs as programs
+    monkeypatch.setattr(programs,'registered_paths',lambda name:[])
+    monkeypatch.setattr(programs.shutil,'which',lambda name:None)
+    root=tmp_path/'Programs'; steam=root/'Steam'/'steam.exe'; steam.parent.mkdir(parents=True); steam.touch()
+    monkeypatch.setenv('ProgramFiles(x86)',str(root))
+    assert resolve_program('steam',tmp_path)==steam.resolve()
+    assert resolve_program('STEAM.EXE',tmp_path)==steam.resolve()
+    app=tmp_path/'custom.exe'; app.touch()
+    assert resolve_program('custom',tmp_path,[str(app)])==app.resolve()
+    registered=tmp_path/'registered.exe'; registered.touch()
+    monkeypatch.setattr(programs,'registered_paths',lambda name:[registered])
+    assert resolve_program('registered',tmp_path)==registered.resolve()
+    monkeypatch.setattr(programs,'registered_paths',lambda name:[])
+    with pytest.raises(FileNotFoundError):resolve_program('nonexistent_app_xyz',tmp_path)
+
+
+def test_multi_target_expiry():
+    p=Puzzle(22); p.expired=True
+    assert p.finished and not p.allowed(0,0)
+    p.restart(); assert not p.finished and not p.moves
+    for r,c in p.solution:
+        if p.finished:break
+        p.choose(r,c)
+    assert p.won and all(p.completed)
