@@ -11,10 +11,18 @@
   <a href="docs/INSTALL.md">Запуск</a> ·
   <a href="docs/SCREENSHOTS.md">Скриншоты</a> ·
   <a href="docs/FEATURES.md">Возможности</a> ·
-  <a href="https://github.com/PANDORA615/Netwatch-Terminal/actions">Сборки</a>
+  <a href="https://github.com/PANDORA615/Netwatch-Terminal/releases/latest">Скачать .exe</a>
 </p>
 
 Локальное desktop-приложение на Python 3.12+ и PySide6 в оригинальном cyberpunk-стиле. Целевая платформа — Windows 10/11 x64; интерфейс также можно запускать в Linux.
+
+## Скачать для Windows
+
+### [⬇ Скачать NETWATCH Terminal — Windows x64 (ZIP)](https://github.com/PANDORA615/Netwatch-Terminal/releases/latest/download/NetwatchTerminal-Windows-x64.zip)
+
+**Python и вход в GitHub не нужны.** Скачайте ZIP → **Извлечь всё** → запустите `NetwatchTerminal.exe`. Сохраните рядом папку `_internal`. Это переносимая тестовая версия для Windows 10/11 x64.
+
+[Страница релиза](https://github.com/PANDORA615/Netwatch-Terminal/releases/latest) · [Подробная установка](docs/INSTALL.md)
 
 ## Интерфейс
 
@@ -43,11 +51,9 @@
 
 **Самый простой способ для Windows — готовая сборка, Python не нужен.**
 
-1. Откройте [GitHub Actions → Desktop checks](https://github.com/PANDORA615/Netwatch-Terminal/actions/workflows/ci.yml).
-2. Выберите успешный запуск для ветки `main` с зелёной галочкой.
-3. Внизу страницы, в **Artifacts**, скачайте **NetwatchTerminal-Windows-x64**. Для скачивания требуется вход в GitHub.
-4. Нажмите на ZIP правой кнопкой → **Извлечь всё**. Сохраните всю распакованную папку, включая `_internal`.
-5. Откройте `NetwatchTerminal.exe` из распакованной папки. Не запускайте его прямо из ZIP и не переносите отдельно от остальных файлов.
+1. Нажмите **[Скачать Windows x64](https://github.com/PANDORA615/Netwatch-Terminal/releases/latest/download/NetwatchTerminal-Windows-x64.zip)** — вход в GitHub не требуется.
+2. Нажмите на ZIP правой кнопкой → **Извлечь всё**.
+3. Откройте `NetwatchTerminal.exe` из распакованной папки. Сохраните рядом `_internal`; не переносите `.exe` отдельно.
 
 Это desktop-приложение для Windows 10/11 x64. На Android/iPhone файл `.exe` не запускается. Готовые сборки пока тестовые; отдельного установщика нет.
 
